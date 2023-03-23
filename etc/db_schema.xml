@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+	<table name="sales_order">
+		<column name="prozo_order_id" nullable="true" xsi:type="varchar" comment="Prozo Order Id" length="255"/>
+	</table>
+	<table name="sales_shipment">
+		<column name="prozo_status" nullable="true" xsi:type="varchar" comment="Prozo Status" length="255"/>
+		<column name="prozo_shipment_id" nullable="true" xsi:type="varchar" comment="Prozo Status" length="255"/>
+	</table>
+	<table name="sales_shipment_grid">
+		<column name="prozo_status" nullable="true" xsi:type="varchar" comment="Prozo Status" length="255"/>
+		<column name="prozo_shipment_id" nullable="true" xsi:type="varchar" comment="Prozo Status" length="255"/>
+	</table>
+	<table name="sales_shipment_item">
+		<column name="prozo_item_status" nullable="true" xsi:type="varchar" comment="Prozo Item Status" length="255"/>
+	</table>
+</schema>

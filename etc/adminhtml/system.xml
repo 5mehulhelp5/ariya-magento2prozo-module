@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="ariyainfotech" translate="label" sortOrder="10" showInStore="0">
+            <label>Ariya Infotech</label>
+        </tab>
+        <section id="prozo" translate="label" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="0">
+            <label>Prozo</label>
+            <tab>ariyainfotech</tab>
+            <resource>AriyaInfoTech_ProzoInt::prozo_config</resource>
+            <group id="config_data" sortOrder="10" showInWebsite="1" showInStore="0" showInDefault="1" translate="label">
+                <label>Configuration</label>
+                <field id="enable" type="select" sortOrder="1" showInWebsite="1" showInStore="0" showInDefault="1" translate="label">
+                    <label>Module Status</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="user_name" type="text" sortOrder="2" showInWebsite="1" showInStore="0" showInDefault="1" translate="label">
+                    <label>User Name</label>
+                    <comment>Enter Your Prozo Domain Name</comment>
+                </field>
+                <field id="auth_pass" type="password" sortOrder="3" showInWebsite="1" showInStore="0" showInDefault="1" translate="label">
+                    <label>Auth Password</label>
+                    <comment>Enter Your Prozo Password</comment>
+                </field>
+                <field id="payment_method" type="multiselect" sortOrder="3" showInWebsite="1" showInStore="0" showInDefault="1" translate="label">
+                    <label>select Prepaid Payment Methods</label>
+                    <source_model>AriyaInfoTech\ProzoInt\Model\Config\Source\getAllPaymentMethods</source_model>
+                </field>
+                <field id="payment_method_cod" type="multiselect" sortOrder="3" showInWebsite="1" showInStore="0" showInDefault="1" translate="label">
+                    <label>select Cash On Delivery Payment Method</label>
+                    <source_model>AriyaInfoTech\ProzoInt\Model\Config\Source\getAllPaymentMethods</source_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
