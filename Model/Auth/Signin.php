@@ -28,7 +28,7 @@ class Signin
 
     public function getAuthTokenDataCreate(){
         try{
-            $loginApi = "https://proshipdev.prozo.com/api/auth/signin";
+            $loginApi = $this->_prozoIntHelper->authLoginChanelURL();
             $postData = $this->getAuthPostData();
             $authHewader = $this->getAuthHttpData();
             $this->curl->setOption(CURLOPT_HEADER, 0);
@@ -36,6 +36,7 @@ class Signin
             $this->curl->setOption(CURLOPT_FOLLOWLOCATION, true);
             $this->curl->setOption(CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
             $this->curl->setOption(CURLOPT_RETURNTRANSFER, true);
+            $this->curl->setOption(CURLOPT_SSL_VERIFYPEER, false);
             $this->curl->setHeaders($authHewader);
             $this->curl->post($loginApi, $postData); 
             $response = $this->curl->getBody();
@@ -43,7 +44,7 @@ class Signin
             if($responcesData){
                 if(isset($responcesData['accessToken'])){
                     $accessToken = $responcesData['accessToken'];
-                    $this->_readWriteModel->createAuthTokenFile($accessToken);
+                    $this->_prozoIntHelper->createAuthTokenFile($accessToken);
                     return $accessToken;
                 }
             }
@@ -79,7 +80,7 @@ class Signin
 
     public function getTokenSessionId(){
         try{
-            return $this->_readWriteModel->getTokenReadFile();
+            return $this->_prozoIntHelper->getTokenReadFile();
         }catch(\Exception $e){
             $this->_prozoIntHelper->createprozoLog($e->getMessage());
         }
@@ -93,5 +94,22 @@ class Signin
         }
         $headers = ["Content-Type" => "application/json","Authorization"=> 'Bearer '.$tokenData];
         return $headers;
+    }
+
+    public function getPutMethodTOkenHeaderData(){
+        try{
+            $header_array=array();
+            $tokenData = "Bearer ".$this->getTokenSessionId();
+            if($this->getTokenSessionId() == null){
+                $tokenData = "Bearer ".$this->getAuthTokenDataCreate();
+            }
+            $getTokenadmin = $tokenData;
+            $tokenCreate = 'Authorization:'.$getTokenadmin;
+            $contecntType = 'Content-Type: application/json';
+            array_push($header_array,$tokenCreate,$contecntType);
+            return $header_array;
+        }catch(\Exception $e){
+            return false;
+        }
     }
 }

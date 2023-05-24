@@ -3,4 +3,10 @@
     <event name="checkout_submit_all_after">
         <observer name="ariyainfotech_prozoint_observer_sales_orderplaceafter_checkout_submit_all_after" instance="AriyaInfoTech\ProzoInt\Observer\Sales\OrderPlaceAfter"/>
     </event>
+    <event name="order_cancel_after">
+        <observer name="ariyainfotech_prozoint_observer_order_cancelafter_order_cancel_after" instance="AriyaInfoTech\ProzoInt\Observer\Sales\Order\CancelAfter"/>
+    </event>
+    <event name="admin_sales_order_address_update">
+        <observer name="ariyainfotech_prozoint_observer_order_Update_admin_sales_order_address_update" instance="AriyaInfoTech\ProzoInt\Observer\Sales\Order\AdressUpdate"/>
+    </event>
 </config>

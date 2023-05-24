@@ -26,16 +26,17 @@ class CancelSync
         $this->_signinModel = $signinModel;
     }
 
-    public function orderCancelProzoData($chanelOrderId,$orderId){
+    public function orderCancelProzoData($chanelOrderId){
         try{
+            $marchentId = $this->_prozoIntHelper->getMerchantId();
             $main = array(
                 "channelOrderId"=>$chanelOrderId,
-                "channelOrderStatus"=>"CANCELLED",
-                "order_type"=>"B2C",
-                "order_number"=>$orderId
+                "merchantOId"=>$marchentId,
+                "channel"=>"MAGENTO",
+                "channelOrderStatus"=>"CANCELLED"
             );
             $mainData = json_encode($main);
-            $this->prozoCurlCancelOrderDataPush($mainData);
+            $this->newCurlRequestOrderCancelSync($mainData);
             return true;
         }catch(Exception $e){
             $this->_prozoIntHelper->createprozoLog($e->getMessage());
@@ -43,22 +44,48 @@ class CancelSync
         }
     }
 
-    public function prozoCurlCancelOrderDataPush($postData){
+    public function newCurlRequestOrderCancelSync($postData){
         try{
+            $trycahcle = 0;
+            $authHeader = $this->_signinModel->getPutMethodTOkenHeaderData();
+            $trycahcle = 0;
             $prozocancelUrl = $this->_prozoIntHelper->OrderCancelURL();
-            $authHeader = $this->_signinModel->withAuthHeaderCurlData();
-            $this->_curl->setOption(CURLOPT_HEADER, 0);
-            $this->_curl->setOption(CURLOPT_TIMEOUT, 0);
-            $this->_curl->setOption(CURLOPT_FOLLOWLOCATION, true);
-            $this->_curl->setOption(CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-            $this->_curl->setOption(CURLOPT_RETURNTRANSFER, true);
-            $this->_curl->setHeaders($authHeader);
-            $this->_curl->post($prozocancelUrl, $postData);
-            $response = $this->_curl->getBody();
+            $curl = curl_init();
+            curl_setopt_array($curl, array(
+              CURLOPT_URL => $prozocancelUrl,
+              CURLOPT_RETURNTRANSFER => true,
+              CURLOPT_ENCODING => '',
+              CURLOPT_MAXREDIRS => 10,
+              CURLOPT_TIMEOUT => 0,
+              CURLOPT_FOLLOWLOCATION => true,
+              CURLOPT_SSL_VERIFYPEER => false,
+              CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+              CURLOPT_CUSTOMREQUEST => 'PUT',
+              CURLOPT_POSTFIELDS =>$postData,
+              CURLOPT_HTTPHEADER => $authHeader,
+            ));
+            $response = curl_exec($curl);
+            $responsaearray = $this->_prozoIntHelper->setJsonDecode($response);
             $this->_prozoIntHelper->createprozoLog($response);
+            if(isset($responsaearray['opertaion'])){
+                if($responsaearray['opertaion'] != 'CHANNEL_ORDER_CANCEL' && $responsaearray['opertaion'] != 'SUCCESS'){
+                    $this->_prozoIntHelper->createprozoLog("ST--");
+                    $this->_prozoIntHelper->createprozoLog($response);
+                    $this->_prozoIntHelper->createprozoLog("End--");
+                }
+            }
+            if(isset($responsaearray['statusCode'])){
+                if($responsaearray['statusCode'] == '401' || $responsaearray['statusCode'] == 401 && $trycahcle == 0){
+                    $this->_signinModel->getAuthTokenDataCreate();
+                    $this->newCurlRequestOrderCancelSync($postData);
+                    $trycahcle++;
+                }
+            }
+            return true;
         }catch(Exception $e){
             $this->_prozoIntHelper->createprozoLog($e->getMessage());
             return true;
         }
+
     }
 }
