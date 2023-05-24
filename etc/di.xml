@@ -4,8 +4,18 @@
 		<arguments>
 			<argument name="columns" xsi:type="array">
 				<item name="prozo_status" xsi:type="string">sales_shipment.prozo_status</item>
+				<item name="prozo_shipment_id" xsi:type="string">sales_shipment.prozo_shipment_id</item>
 			</argument>
 		</arguments>
 	</virtualType>
-	<preference for="AriyaInfoTech\ProzoInt\Api\ShipmentCreateManagementInterface"	type="AriyaInfoTech\ProzoInt\Model\Order\ShipmentCreate\ShipmentCreateManagement"/>
+	<virtualType name="Magento\Sales\Model\ResourceModel\Order\Grid" type="Magento\Sales\Model\ResourceModel\Grid">
+		<arguments>
+			<argument name="columns" xsi:type="array">
+				<item name="prozo_order_id" xsi:type="string">sales_order.prozo_order_id</item>
+			</argument>
+		</arguments>
+	</virtualType>
+	<preference for="AriyaInfoTech\ProzoInt\Api\ShipmentCreateManagementInterface" type="AriyaInfoTech\ProzoInt\Model\Order\ShipmentCreate\ShipmentCreateManagement"/>
+	<preference for="AriyaInfoTech\ProzoInt\Api\ShipmentStatusUpdateManagementInterface" type="AriyaInfoTech\ProzoInt\Model\Order\ShipmentStatusUpdate\ShipmentStatusUpdateManagement"/>
+	<preference for="AriyaInfoTech\ProzoInt\Api\CreateInvoiceManagementInterface" type="AriyaInfoTech\ProzoInt\Model\Order\Invoice\CreateInvoiceManagement"/>
 </config>

@@ -48,8 +48,10 @@ class AutoSync
 
     public function pushOrderDataTOProzoAccount($orderId,$returnType = null){
         try{
-            $this->_prozoIntHelper->createprozoLog("================== Start ==================");
-            $this->_prozoIntHelper->createprozoLog("Order Id :- ". $orderId);
+            $moduleStatus = $this->_prozoIntHelper->isModuleEnable();
+            if($moduleStatus != 1 || $moduleStatus != '1'){
+                return true;
+            }
             $order = $this->_orderRepository->get($orderId);
             if($order->getStatus() == 'pending' || $order->getStatus() == 'processing'){
                 $drop_pincodeshipping = $order->getShippingAddress()->getPostcode();
@@ -68,7 +70,7 @@ class AutoSync
                 $countrycodebillingaddress = $billingaddress ? $billingaddress->getCountryId() : [];
                 $dropbillingaddress = $streetbilling.",".$drop_citybillingaddress.",".$drop_pincodebilling;
                 $dropshippingaddress = $streetshipping.",".$drop_cityshippinfaddress.",".$drop_pincodeshipping;
-                $totaltax = (int)$order->getBaseTaxAmount();
+                $totaltax = $this->_prozoIntHelper->getProductPrice($order->getBaseTaxAmount());
                 if($totaltax == 0){
                     $taxesIncluded = false;
                 }elseif($totaltax !== 0){
@@ -82,8 +84,10 @@ class AutoSync
                 $paymentMethods = "COD";
                 if(in_array($paymentMethod, $prepaidpaymentMethods)){
                     $paymentMethods = "Prepaid";
+                    $financialStatus = "paid";
                 }elseif(in_array($paymentMethod, $codPaymentMethods)){
                     $paymentMethods = "COD";
+                    $financialStatus = "pending";
                 }
 
                 $billindaddress = array(
@@ -123,46 +127,54 @@ class AutoSync
                 $itemsordered = array();
                 foreach($order->getAllVisibleItems() as $item){
                     $items = array();
-                    $items['product_id'] = (int)$item->getId();
+                    $taxlines = array();
+                    $items['id'] = (int)$item->getItemId();
+                    $items['product_id'] = $item->getItemId();
+                    $items['variant_id'] = $item->getProductId();
                     $items['title'] = $item->getName();
                     $items['fulfillable_quantity'] = (int)$item->getQtyOrdered();
-                    $itemtax = (int)$item->getBaseTaxAmount();
+                    $itemtax = $this->_prozoIntHelper->getProductPrice($item->getBaseTaxAmount());
                     if($itemtax == 0){
                         $taxable = false;
                     }else{
                         $taxable = true;
                     }
+                    $itemweight = (float)$item->getWeight()*(int)$item->getQtyOrdered();
                     $items['taxable'] = $taxable;
-                    $items['skuId'] = $item->getSku();
+                    $items['sku_id'] = $item->getSku();
                     $items['units'] = (int)$item->getQtyOrdered();
-                    $items['selling_price'] = (float)$item->getBasePriceInclTax();
+                    $items['selling_price'] = $this->_prozoIntHelper->getProductPrice($item->getBasePrice());
                     $items['item_breadth'] = 20;
                     $items['weight'] = (float)$item->getWeight();
                     $items['item_length'] = 20;
                     $items['item_height'] = 20;
-                    $totalWeight += $item->getWeight();
+                    $taxlines['price'] = $this->_prozoIntHelper->getProductPrice($itemtax);
+                    $taxlines['rate'] = $this->_prozoIntHelper->getProductPrice($item->getTaxPercent());
+                    $taxlines['title'] = $this->_prozoIntHelper->getProductPrice($item->getTaxPercent())."%";
+                    $totalWeight += $itemweight;
+                    $items['taxlines'][] = $taxlines;
                     $itemsordered[] = $items;
                 }
                 $main = array(
-                    "total_price"=>(int)$order->getGrandTotal(),
+                    "total_price"=>$this->_prozoIntHelper->getProductPrice($order->getGrandTotal()),
                     "total_weight"=>$totalWeight,
                     "channelPaymentMode"=>$paymentMethod,
                     "total_tax"=>$totaltax,
-                    "cod"=>(int)$order->getBaseTotalDue(),
-                    "total_discounts"=>(int)$order->getBaseDiscountAmount(),
+                    "cod"=>$this->_prozoIntHelper->getProductPrice($order->getBaseTotalDue()),
+                    "total_discounts"=>$this->_prozoIntHelper->getProductPrice($order->getBaseDiscountAmount()),
                     "taxes_included"=>$taxesIncluded,
                     "currency"=>$order->getBaseCurrencyCode(),
-                    "total_items_price"=>(int)$order->getBaseSubtotal(),
+                    "total_items_price"=>$this->_prozoIntHelper->getProductPrice($order->getBaseSubtotal()),
                     "checkout_id"=>(int)$order->getQuoteId(),
                     "order_number"=>(int)$order->getEntityId(),
                     "fulfillment_status"=>$order->getStatus(),
-                    "financial_status"=>$order->getState(),
-                    "total_shipping_price"=>$order->getBaseShippingAmount(),
+                    "financial_status"=>$financialStatus,
+                    "total_shipping_price"=>$this->_prozoIntHelper->getProductPrice($order->getBaseShippingAmount()),
                     "subtotal_price_after_discount"=>null,
                     "billing_address"=>$billindaddress,
                     "shipping_address"=>$shippingaddress,
                     "channelOrderId"=>$orderId,
-                    "channel"=>"WOO_COMMERCE",
+                    "channel"=>"MAGENTO",
                     "channelOrderStatus"=>"CREATED",
                     "orderId"=>$order->getIncrementId(),
                     "orderDate"=>$order->getCreatedAt(),
@@ -174,9 +186,12 @@ class AutoSync
                 $maindata = json_encode($main);
                 $this->_prozoIntHelper->createprozoLog($maindata);
                 $returnOrderId = $this->prozoCurlDataPush($maindata);
-                if($returnOrderId != null){
+                if($returnOrderId != null || $returnOrderId != 0 || $returnOrderId != 1){
                     $order->setProzoOrderId($returnOrderId);
                     $order->save();
+                }
+                if($returnType != null){
+                    return $returnOrderId;
                 }
                 return true;
             }
@@ -184,7 +199,7 @@ class AutoSync
             $this->_prozoIntHelper->createprozoLog($e->getMessage());
             return true;
         }
-        return false;
+        return true;
     }
 
     public function prozoCurlDataPush($postData){
@@ -198,6 +213,7 @@ class AutoSync
                 $this->_curl->setOption(CURLOPT_FOLLOWLOCATION, true);
                 $this->_curl->setOption(CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
                 $this->_curl->setOption(CURLOPT_RETURNTRANSFER, true);
+                $this->_curl->setOption(CURLOPT_SSL_VERIFYPEER, false);
                 $this->_curl->setHeaders($authHeader);
                 $this->_curl->post($prozoUrl, $postData);
                 $response = $this->_curl->getBody();

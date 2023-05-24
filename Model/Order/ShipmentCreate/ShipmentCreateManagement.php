@@ -60,19 +60,18 @@ class ShipmentCreateManagement implements \AriyaInfoTech\ProzoInt\Api\ShipmentCr
                 $shipmentData=array();
                 $shipment = $this->_convertOrder->toShipment($order);
                 $shipedItemDetails = $this->getShipedItemDetails($requestData);
-                $itemcount = 0;
                 foreach($order->getAllVisibleItems() as $orderItem){
                     $qtyShipped = 0;
-                    if (!$orderItem->getQtyToShip() || $orderItem->getIsVirtual()) {
+                    if(!$orderItem->getQtyToShip() || $orderItem->getIsVirtual()){
                         continue;
                     }
-                    if (in_array($orderItem->getId(), $shipedItemDetails)){
+                    if(array_key_exists($orderItem->getId(), $shipedItemDetails)){
                         if(isset($shipedItemDetails[$orderItem->getId()])){
                             $qtyShipped = $shipedItemDetails[$orderItem->getId()];
+                            $shipmentItem = $this->_convertOrder->itemToShipmentItem($orderItem)->setQty($qtyShipped);
+                            $shipment->addItem($shipmentItem);
                         }
                     }
-                    $shipmentItem = $this->_convertOrder->itemToShipmentItem($orderItem)->setQty($qtyShipped);
-                    $shipment->addItem($shipmentItem);
                 }
                 $shipment->register();
                 $shipment->getOrder()->setIsInProcess(true);
