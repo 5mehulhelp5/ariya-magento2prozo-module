@@ -1,16 +1,17 @@
 {
     "name": "ariyainfotech/module-prozoint",
-    "description": "Developed BY Ariya InfoTech(www.ariya infotech.com)",
+    "description": "Extension For Magento2 Developed BY Ariya InfoTech(www.ariya infotech.com)",
     "type": "magento2-module",
     "license": "GPL-3.0",
+	"version":"1.0.1",
     "authors": [
         {
-            "name": "Mage2Gen",
-            "email": "info@mage2gen.com"
+            "name": "Ariya InfoTech",
+            "email": "info@ariyainfotech.com"
         },
         {
             "name": "Yuvraj Raulji",
-            "email": "toyuvrajraulji@gmail.com"
+            "email": "yuvraj@ariyainfotech.com"
         }
     ],
     "minimum-stability": "dev",
