@@ -17,7 +17,7 @@ use Magento\Framework\Filesystem\Driver\File;
 
 class Data extends AbstractHelper{
 
-    const API_END_POINT = "https://proshipdev.prozo.com/";
+    const API_END_POINT = "https://proship.prozo.com/";
     const CANCEL_URL = "api/channel/order/update";
     const LOGIN_URL = "api/auth/signin";
     const ORDER_CHANEL_SYNC = "api/channel/order/create";
@@ -400,7 +400,7 @@ class Data extends AbstractHelper{
         $response['message'] =  'Success';
         $response['data'] = $data;
         echo $this->setJsonEncode($response);
-        exit;
+		exit();
     }
 
     public function setErrorMessage($errorMessage){
@@ -408,7 +408,8 @@ class Data extends AbstractHelper{
         $response['statusCode'] =  "300";
         $response['message'] = $errorMessage;
         echo $this->setJsonEncode($response);
-        exit;   
+		exit();
+        
     }
 
     public function setJsonEncode($data){
