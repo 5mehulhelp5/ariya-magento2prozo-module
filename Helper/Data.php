@@ -394,22 +394,21 @@ class Data extends AbstractHelper{
         return true;
     }
 
-    public function setSucessData($data){
-        $response['status'] =  "SUCCESS";
-        $response['statusCode'] =  "200";
-        $response['message'] =  'Success';
-        $response['data'] = $data;
-        echo $this->setJsonEncode($response);
-		exit();
+   public function setSucessData($data){
+        $response = [];
+        $response['0']['status'] =  "SUCCESS";
+        $response['0']['statusCode'] =  "200";
+        $response['0']['message'] =  'Success';
+        $response['0']['data'] = $data;
+        return $response;
     }
 
     public function setErrorMessage($errorMessage){
-        $response['status'] =  "ERROR";
-        $response['statusCode'] =  "300";
-        $response['message'] = $errorMessage;
-        echo $this->setJsonEncode($response);
-		exit();
-        
+        $response = [];
+        $response['0']['status'] =  "ERROR";
+        $response['0']['statusCode'] =  "300";
+        $response['0']['message'] = $errorMessage;
+        return $response;
     }
 
     public function setJsonEncode($data){
