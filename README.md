@@ -10,7 +10,7 @@
 
 
 ## Main Functionalities
-Developed BY Ariya InfoTech(www.ariya infotech.com)
+Developed BY Ariya InfoTech(www.ariyainfotech.com)
 
 ## Installation
 \* = in production please use the `--keep-generated` option
